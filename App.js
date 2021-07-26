@@ -12,7 +12,7 @@ export default function App() {
 }
 
 const switchnavigator = createSwitchNavigator({
-  //loginscreen: {screen: LoginPage},
+  loginscreen: {screen: LoginPage},
   drawer: {screen: AppDrawerNavigator}
 });
 
