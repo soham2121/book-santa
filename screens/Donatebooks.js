@@ -33,11 +33,13 @@ export default class Donatebooks extends React.Component{
                 <Text style = {{paddingBottom: 5}}>Book Price: {item.price}</Text>
 
                 <TouchableOpacity style = {{paddingBottom: 30, backgroundColor: "#CCCCCC", width: 200, height: 30, borderRadius: 10}}
-                onPress = {this.props.navigation.navigate('receiver')}>
+                onPress = {() => this.props.navigation.navigate('receiver')}>
 
                 <Text style = {{textAlign: 'center'}}>View</Text>
 
                 </TouchableOpacity>
+
+                <Text style = {{paddingBottom: 10}}>------------------------------------------------------------------------------------------------------------</Text>
             </View>
         )
     }
