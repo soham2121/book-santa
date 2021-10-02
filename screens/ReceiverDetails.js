@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Header, Icon, Card } from 'react-native-elements'
 import db from '../config';
 import firebase from 'firebase';
 
@@ -8,6 +9,7 @@ export default class ReceiverDetails extends React.Component{
         super(props);
         this.state = {
             userId: firebase.auth().currentUser.email,
+            userName: '',
             receiverId: this.props.navigation.getParam('details')["user_id"],
             requestId: this.props.navigation.getParam('details')["request_id"],
             bookName: this.props.navigation.getParam('details')["book_name"],
@@ -17,6 +19,35 @@ export default class ReceiverDetails extends React.Component{
             recieverAddress: '',
             receiverRequestDocID: '',
         }
+    }
+
+    getUserDetail = (userId) => {
+        db.collection('users').where('email_id','==',userId).get()
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                this.setState({
+                    userName: doc.data().first_name + " " + doc.data().last_name
+                })
+            })
+        })
+    }
+
+    addNotification = () => {
+        var message = this.state.userName + "Has Shows Interest In Dontating The Book";
+        db.collection(All_notification).add({
+            'targeted_user_id': this.state.receiverId,
+            'donor_id': this.state.userId,
+            'request_id': this.state.requestId,
+            'book_name': this.state.bookName,
+            'date': firebase.firestore.FieldValue.serverTimestamp(),
+            'notification_status': "unread",
+            'message': message
+        })
+    }
+
+    componentDidMount = () => {
+        this.getReceiverDetails();
+        this.getUserDetails(this.state.userId)
     }
 
     getReceiverDetails = () => {
@@ -44,8 +75,58 @@ export default class ReceiverDetails extends React.Component{
 
     render(){
         return(
-            <View>
-                <Text>Reciever Details</Text>
+            <View style = {styles.container}>
+                <View style = {{flex: 0.1}}>
+                    <Header
+                    leftComponent = {<Icon name = 'arrow-left' type = 'feather' color = '#696969' onPress = {
+                        () => this.props.navigation.goBack()
+                    }
+                    />}
+                    centerComponent = {{text: "Donate Books", style: {color: '#90a5a9', fontSize: 20, fontWeight: 'bold'}}}
+                    backgroundColor = "#eaf8fe"
+                    />
+                </View>
+
+                <View style = {{flex: 0.3}}>
+                    <Card title = {"Book Information"} titleStyle = {{fontSize: 20}}>
+                        <Card>
+                            <Text style = {{fontWeight: 'bold'}}>Name: {this.state.bookName}</Text>
+                        </Card>
+                        <Card>
+                            <Text style = {{fontWeight: 'bold'}}>Reason: {this.state.reasonForRequest}</Text>
+                        </Card>
+                    </Card>
+                </View>
+
+                <View style = {{flex: 0.3}}>
+                    <Card title = {"Reciever Information"} titleStyle = {{fontSize: 20}}>
+                        <Card>
+                            <Text style = {{fontWeight: 'bold'}}>Name: {this.state.recieverName}</Text>
+                        </Card>
+                        <Card>
+                            <Text style = {{fontWeight: 'bold'}}>Contact: {this.state.recieverContact}</Text>
+                        </Card>
+                        <Card>
+                            <Text style = {{fontWeight: 'bold'}}>Address: {this.state.recieverAddress}</Text>
+                        </Card>
+                    </Card>
+                </View>
+
+                <View style = {styles.buttonContainer}>
+                    {
+                        this.state.receiverId != this.state.userId ? (
+                            <TouchableOpacity style = {styles.button} onPress = {
+                                () => {
+                                    this.updateBookStatus();
+                                    this.addNotification();
+                                    this.props.navigation.navigate('MyDonations')
+                                }
+                            }>
+                                <Text>I Want To Donate</Text>
+                            </TouchableOpacity>
+                        ) : null
+                    }
+                </View>
             </View>
         )
     }

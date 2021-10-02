@@ -38,7 +38,7 @@ export default class LoginPage extends React.Component{
         else{
             firebase.auth().createUserWithEmailAndPassword(emailId, password)
             .then(() => {
-                db.collection('Users').add({
+                db.collection('users').add({
                     first_name: this.state.firstName,
                     last_name: this.state.lastName,
                     contact: this.state.contact,

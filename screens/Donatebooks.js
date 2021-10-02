@@ -12,12 +12,11 @@ export default class Donatebooks extends React.Component{
     }
 
     componentDidMount(){
-        var requestRef = db.collection('Books').onSnapshot((snapshot)=>{
+        var requestRef = db.collection('requested_books').onSnapshot((snapshot)=>{
             var booklist = snapshot.docs.map((doc) => doc.data());
             this.setState({
                 booklist: booklist
             })
-            console.log(booklist)
         })
     }
 
@@ -26,11 +25,9 @@ export default class Donatebooks extends React.Component{
     renderItem = ({item, i}) => {
         return(
             <View>
-                <Text style = {{paddingBottom: 5, paddingTop: 5}}>Book Name: {item.name}</Text>
+                <Text style = {{paddingBottom: 5, paddingTop: 5}}>Book Name: {item.book_name}</Text>
 
-                <Text style = {{paddingBottom: 5}}>Book Pages: {item.pages}</Text>
-
-                <Text style = {{paddingBottom: 5}}>Book Price: {item.price}</Text>
+                <Text style = {{paddingBottom: 5}}>Reason to request: {item.reason_to_request}</Text>
 
                 <TouchableOpacity style = {{paddingBottom: 30, backgroundColor: "#CCCCCC", width: 200, height: 30, borderRadius: 10}}
                 onPress = {() => this.props.navigation.navigate('receiver')}>
