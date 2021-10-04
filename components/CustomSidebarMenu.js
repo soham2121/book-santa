@@ -53,7 +53,7 @@ export default class CustomSidebarMenu extends React.Component{
     }
 
     getUserProfile(){
-        db.collections('Users').where("email_id", "==", this.state.userId)
+        db.collection('Users').where("email_id", "==", this.state.userId)
         .onSnapshot((snapshot) => {
             snapshot.forEach((doc) => {
                 this.setState({
