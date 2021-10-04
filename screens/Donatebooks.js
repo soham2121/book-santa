@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ListItem, Image, StyleSheet } from 'react-native';
 import ReceiverDetails from './ReceiverDetails';
 import db from '../config'
 
@@ -24,20 +24,27 @@ export default class Donatebooks extends React.Component{
 
     renderItem = ({item, i}) => {
         return(
-            <View>
-                <Text style = {{paddingBottom: 5, paddingTop: 5}}>Book Name: {item.book_name}</Text>
-
-                <Text style = {{paddingBottom: 5}}>Reason to request: {item.reason_to_request}</Text>
-
-                <TouchableOpacity style = {{paddingBottom: 30, backgroundColor: "#CCCCCC", width: 200, height: 30, borderRadius: 10}}
-                onPress = {() => this.props.navigation.navigate('receiver')}>
-
-                <Text style = {{textAlign: 'center'}}>View</Text>
-
-                </TouchableOpacity>
-
-                <Text style = {{paddingBottom: 10}}>------------------------------------------------------------------------------------------------------------</Text>
-            </View>
+            <ListItem
+                key={i}
+                title={item.book_name}
+                subtitle={item.reason_to_request}
+                titleStyle={{ color: 'black', fontWeight: 'bold' }}
+                leftElement ={<Image
+                    style={{height:50,width:50}}
+                    source={{
+                    uri: item.image_link,
+                }}
+                />}
+                rightElement={
+                    <TouchableOpacity style={styles.button} onPress ={()=>{
+                            this.props.navigation.navigate("RecieverDetails",{"details": item})
+                        }}
+                    >
+                    <Text style={{color:'#ffff'}}>View</Text>
+                    </TouchableOpacity>
+                }
+                bottomDivider
+            />
         )
     }
 
@@ -53,3 +60,39 @@ export default class Donatebooks extends React.Component{
         )
     }
 }
+
+const styles = StyleSheet.create({
+    keyBoardStyle : {
+      flex:1,
+      alignItems:'center',
+      justifyContent:'center'
+    },
+    formTextInput:{
+      width:"75%",
+      height:35,
+      alignSelf:'center',
+      borderColor:'#ffab91',
+      borderRadius:10,
+      borderWidth:1,
+      marginTop:20,
+      padding:10,
+    },
+    button:{
+      width:"75%",
+      height:50,
+      justifyContent:'center',
+      alignItems:'center',
+      borderRadius:10,
+      backgroundColor:"#ff5722",
+      shadowColor: "#000",
+      shadowOffset: {
+         width: 0,
+         height: 8,
+      },
+      shadowOpacity: 0.44,
+      shadowRadius: 10.32,
+      elevation: 16,
+      marginTop:20
+      },
+    }
+  )

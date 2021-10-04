@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Header, Icon, Card } from 'react-native-elements'
+import { View, Text, TouchableOpacity,StyleSheet} from 'react-native';
+import { Header, Icon, Card } from 'react-native-elements';
+import { RFValue } from "react-native-responsive-fontsize";
 import db from '../config';
 import firebase from 'firebase';
 
@@ -21,7 +22,7 @@ export default class ReceiverDetails extends React.Component{
         }
     }
 
-    getUserDetail = (userId) => {
+    getUserDetails = (userId) => {
         db.collection('users').where('email_id','==',userId).get()
         .then((snapshot) => {
             snapshot.forEach((doc) => {
@@ -131,3 +132,21 @@ export default class ReceiverDetails extends React.Component{
         )
     }
 }
+
+const styles = StyleSheet.create({
+  
+    button: {
+      width: "75%",
+      height: RFValue(60),
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: RFValue(60),
+      backgroundColor: "#ff5722",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      elevation: 16,
+    },
+  });

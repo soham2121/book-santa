@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, TextInput, StyleSheet, FlatList } from 'react-native';
 import firebase from 'firebase';
 import db from '../config';
 import MyHeader from '../components/Header'
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BookSearch } from 'react-native-google-books';
 
 export default class Requestbooks extends React.Component{
     constructor(){
@@ -29,13 +30,15 @@ export default class Requestbooks extends React.Component{
     addRequest = async(bookName, reasonToRequest) => {
         var userId = this.state.userId;
         var randomRequestId = this.createUniqueId();
+        var books = await BookSearch.searchBook(bookName, 'AIzaSyD3ymT0zyqPkuPlJAuL7lWaVGKaH5dJoo4')
         db.collection('requested_books').add({
             "user_id": userId,
             "book_name": bookName,
             "reason_to_request": reasonToRequest,
             "request_id": randomRequestId,
             "book_status": "requested",
-            "date": firebase.firestore.FieldValue.serverTimestamp() 
+            "date": firebase.firestore.FieldValue.serverTimestamp(),
+            image_link: books.data[0].volumeInfo.imageLinks.smallThumbnail
         })
         await this.getBookRequest()
         db.collection('users').where("email_Id", "==", userId).get()
@@ -135,56 +138,85 @@ export default class Requestbooks extends React.Component{
     componentDidMount = () => {
         this.getBookRequest();
         this.getIsBookRequestActive();
+
+    }
+
+    async GetBooksFromAPI(bookName){
+        this.setState({
+            bookname: bookName,
+
+        })
+        if(bookName.length > 2){
+            var books = await BookSearch.searchBook(bookName, "AIzaSyD3ymT0zyqPkuPlJAuL7lWaVGKaH5dJoo4")
+            this.setState({
+                dataSource: books.data,
+                showFlatlist: true
+            })
+        }
+    }
+
+    renderItem = ({item,i}) => {
+        return(
+            <TouchableHighlight style = {{alignItems: 'center', backgroundColor: "#6921ab", padding: 10, width: '90%'}}
+            activeOpacity = {0.6} underlayColor = '#ab2169' onPress = {() => {
+                this.setState({
+                    showFlatlist: false,
+                    bookname: item.volumeInfo.title
+                })
+            }}
+            bottomDivider><Text>{item.volumeInfo.title}</Text></TouchableHighlight>
+        )
     }
 
     render(){
-        if(this.state.isBookRequestActive === true){
-            return(
-                <View style = {{flex: 1, justifyContent: 'center'}}>
-                    <View style = {{borderColor: "orange", borderWidth: 1, justifyContent: 'center', alignItems: 'center', padding: 10, margin: 10}}>
-                        <Text>Book Name</Text>
-                        <Text>{this.state.requestedBookName()}</Text>
-                    </View>
-                    <View style ={{borderColor: "orange", borderWidth: 1, justifyContent: 'center', alignItems: 'center', padding: 10, margin: 10}}>
-                        <Text>Book Status</Text>
-                        <Text>{this.state.bookStatus}</Text>
-                    </View>
-                    <TouchableOpacity style = {{borderWidth: 1, borderColor: "orange", width: 300, backgroundColor: "orange", alignItems: 'center', alignSelf: 'center', height: 30, marginTop: 30}}
-                    onPress = {() => {
-                        this.sendNotifications();
-                        this.updateBookRequestStatus();
-                        this.receivedBooks(this.state.requestedBookName);
-                    }}><Text>I received the book</Text></TouchableOpacity>
-                </View>
-            )
-        }
-        else{
-            return(
-                <SafeAreaProvider>
-                    <View style = {{flex: 1}}>
-                        <MyHeader title = "Request Books" navigation = {this.props.navigation}/>
-                        <ScrollView>
-                            <KeyboardAvoidingView style = {styles.keyBoardStyle}>
-                                <TextInput style = {styles.formTextInput} placeholder = {"Enter the book name"} onChangeText = {(text) => {
-                                    this.setState({
-                                        bookname: text
-                                    })
-                                }}/>
-                                <TextInput style = {styles.formTextInput} placeholder = {"Reason to request"} onChangeText = {(text) => {
-                                    this.setState({
-                                        reasonToRequest: text
-                                    })
-                                }}/>
-                                <TouchableOpacity style = {styles.button} onPress = {() => {
-                                    this.addRequest(this.state.bookname, this.state.reasonToRequest)
-                                }}><Text>Request</Text></TouchableOpacity>
-                            </KeyboardAvoidingView>
-                        </ScrollView>
-                    </View>
-                </SafeAreaProvider>
-            )   
-        }
-        
+        <View style={{flex:1}}>
+          <MyHeader title="Request Book" navigation ={this.props.navigation}/>
+
+          <View>
+
+          <TextInput
+            style ={styles.formTextInput}
+            placeholder={"enter book name"}
+            onChangeText={text => this.getBooksFromApi(text)}
+            onClear={text => this.getBooksFromApi('')}
+            value={this.state.bookName}
+          />
+
+      {  this.state.showFlatlist ?
+
+        (  <FlatList
+        data={this.state.dataSource}
+        renderItem={this.renderItem}
+        enableEmptySections={true}
+        style={{ marginTop: 10 }}
+        keyExtractor={(item, index) => index.toString()}
+      /> )
+      :(
+        <View style={{alignItems:'center'}}>
+        <TextInput
+          style ={[styles.formTextInput,{height:300}]}
+          multiline
+          numberOfLines ={8}
+          placeholder={"Why do you need the book"}
+          onChangeText ={(text)=>{
+              this.setState({
+                  reasonToRequest:text
+              })
+          }}
+          value ={this.state.reasonToRequest}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={()=>{ this.addRequest(this.state.bookName,this.state.reasonToRequest);
+          }}
+          >
+          <Text>Request</Text>
+        </TouchableOpacity>
+        </View>
+      )
+    }
+            </View>
+        </View>
     }
 }
 
